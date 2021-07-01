@@ -160,6 +160,12 @@ pub trait VirtioMmioDevice<M: GuestAddressSpace>: WithDriverSelect<M> {
                     // for now).
                     0x30 => self.set_queue_select(v as u16),
                     0x38 => update_queue_field(self, |q| q.size = v as u16),
+                    // allow driver to reset queue after a driver reset
+                    0x44 if self.device_status() == status::RESET && v == 0 => {
+                        if let Some(queue) = self.selected_queue_mut() {
+                            queue.ready = false;
+                        }
+                    }
                     0x44 => update_queue_field(self, |q| q.ready = v == 1),
                     0x50 => self.queue_notify(v),
                     0x64 => {
