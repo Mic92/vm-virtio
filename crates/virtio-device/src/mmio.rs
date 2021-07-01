@@ -133,6 +133,12 @@ pub trait VirtioMmioDevice: WithDriverSelect {
 
                 // This is safe since offset ranges from 0x00..=0xff, i.e. < u32::max.
                 match offset as u32 {
+                    // allow driver to reset queue after a driver reset
+                    0x44 if self.device_status() == status::RESET && v == 0 => {
+                        if let Some(queue) = self.selected_queue_mut() {
+                            queue.set_ready(false);
+                        }
+                    }
                     VIRTIO_MMIO_DEVICE_FEATURES_SEL => self.set_device_features_select(v),
                     VIRTIO_MMIO_DRIVER_FEATURES => {
                         if self.check_device_status(
