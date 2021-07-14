@@ -75,16 +75,18 @@ impl<M: GuestAddressSpace> VirtioConfig<M> {
 }
 
 /// Helper trait that can be implemented for objects which represent virtio devices. Together
-/// with `VirtioDeviceActions`, it enables an automatic `VirtioDevice` implementation for objects
-/// that also implement `BorrowMut<VirtioConfig>`.
+/// with a few `Virtio*` traits, it enables an automatic `VirtioDevice` implementation for objects
+/// that also implement `BorrowMut<VirtioConfig>` (required are VirtioDeviceType,
+/// VirtioDeviceActions, VirtioQueueNotifiable).
 pub trait VirtioDeviceType {
     /// Return the virtio device type.
     fn device_type(&self) -> u32;
 }
 
 /// Helper trait that can be implemented for objects which represent virtio devices. Together
-/// with `VirtioDeviceActions`, it enables an automatic `VirtioDevice` implementation for objects
-/// that also implement `BorrowMut<VirtioConfig>`.
+/// with a few `Virtio*` traits, it enables an automatic `VirtioDevice` implementation for objects
+/// that also implement `BorrowMut<VirtioConfig>` (required are VirtioDeviceType,
+/// VirtioDeviceActions, VirtioQueueNotifiable).
 pub trait VirtioQueueNotifiable {
     /// Callback invoked when the driver writes a value to the Queue Notify configuration register.
     ///
@@ -97,8 +99,9 @@ pub trait VirtioQueueNotifiable {
 }
 
 /// Helper trait that can be implemented for objects which represent virtio devices. Together
-/// with `VirtioDeviceType`, it enables an automatic `VirtioDevice` implementation for objects
-/// that also implement `BorrowMut<VirtioConfig>`.
+/// with a few `Virtio*` traits, it enables an automatic `VirtioDevice` implementation for objects
+/// that also implement `BorrowMut<VirtioConfig>` (required are VirtioDeviceType,
+/// VirtioDeviceActions, VirtioQueueNotifiable).
 pub trait VirtioDeviceActions {
     /// Type of the error that can be returned by `activate` and `reset`.
     type E;
