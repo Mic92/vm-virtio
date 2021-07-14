@@ -66,16 +66,6 @@ fn set_low(v: &mut GuestAddress, lo: u32) {
 /// configuration space.
 // Adding the `M` generic parameter that's also required by `VirtioDevice` for the time being.
 pub trait VirtioMmioDevice<M: GuestAddressSpace>: WithDriverSelect<M> {
-    /// Callback invoked when the driver writes a value to the Queue Notify configuration register.
-    ///
-    /// This is the simplest mechanism the driver can use to notify a virtio MMIO device. The
-    /// meaning of the value is interpreted as specified by the standard. Many VMMs use something
-    /// like the KVM `ioeventfd` mechanism, which eliminates the need to implement this method.
-    // TODO: Move this to the `VirtioDevice` interface if it uniformly applies to all transports.
-    fn queue_notify(&mut self, _val: u32) {
-        // Do nothing by default.
-    }
-
     /// Handle a driver read operation from the MMIO space of the device.
     fn read(&self, offset: u64, data: &mut [u8]) {
         match offset {
