@@ -21,7 +21,7 @@ use log::warn;
 use virtio_queue::QueueT;
 
 pub use mmio::VirtioMmioDevice;
-pub use virtio_config::{VirtioConfig, VirtioDeviceActions, VirtioDeviceType};
+pub use virtio_config::{VirtioConfig, VirtioDeviceActions, VirtioDeviceType, VirtioQueueNotifiable};
 
 // TODO: Bring this (and other feature definitions) to the vm-virtio crate proper.
 // Using a local const temporarily until then.
@@ -85,6 +85,13 @@ pub trait VirtioDevice {
     /// Return a mutable reference to the queue currently selected by the driver, or `None`
     /// for an invalid selection.
     fn queue_mut(&mut self, index: u16) -> Option<&mut Self::Q>;
+
+    /// Callback invoked when the driver writes a value to the Queue Notify configuration register.
+    ///
+    /// This is the simplest mechanism the driver can use to notify a virtio MMIO device. The
+    /// meaning of the value is interpreted as specified by the standard. Many VMMs use something
+    /// like the KVM `ioeventfd` mechanism, which eliminates the need to implement this method.
+    fn queue_notify(&mut self, val: u32);
 
     /// Return the features advertised by the device.
     ///

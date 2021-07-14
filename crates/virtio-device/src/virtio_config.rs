@@ -74,6 +74,20 @@ pub trait VirtioDeviceType {
 }
 
 /// Helper trait that can be implemented for objects which represent virtio devices. Together
+/// with `VirtioDeviceActions`, it enables an automatic `VirtioDevice` implementation for objects
+/// that also implement `BorrowMut<VirtioConfig>`.
+pub trait VirtioQueueNotifiable {
+    /// Callback invoked when the driver writes a value to the Queue Notify configuration register.
+    ///
+    /// This is the simplest mechanism the driver can use to notify a virtio MMIO device. The
+    /// meaning of the value is interpreted as specified by the standard. Many VMMs use something
+    /// like the KVM `ioeventfd` mechanism, which eliminates the need to implement this method.
+    fn queue_notify(&mut self, _val: u32) {
+        // Do nothing by default.
+    }
+}
+
+/// Helper trait that can be implemented for objects which represent virtio devices. Together
 /// with `VirtioDeviceType`, it enables an automatic `VirtioDevice` implementation for objects
 /// that also implement `BorrowMut<VirtioConfig>`.
 pub trait VirtioDeviceActions {
@@ -91,7 +105,7 @@ pub trait VirtioDeviceActions {
 // implement `WithVirtioConfig` and `WithDeviceOps`.
 impl<T> VirtioDevice for T
 where
-    T: VirtioDeviceType + VirtioDeviceActions + BorrowMut<VirtioConfig<Queue>>,
+    T: VirtioDeviceType + VirtioDeviceActions + VirtioQueueNotifiable + BorrowMut<VirtioConfig<Queue>>,
 {
     type E = <Self as VirtioDeviceActions>::E;
     type Q = Queue;
@@ -112,6 +126,10 @@ where
 
     fn queue_mut(&mut self, index: u16) -> Option<&mut Queue> {
         self.borrow_mut().queues.get_mut(usize::from(index))
+    }
+
+    fn queue_notify(&mut self, val: u32) {
+        self.queue_notify(val)
     }
 
     fn device_features(&self) -> u64 {
